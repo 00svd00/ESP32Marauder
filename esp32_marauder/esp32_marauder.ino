@@ -39,6 +39,8 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "flipperLED.h"
 #elif defined(XIAO_ESP32_S3)
   #include "xiaoLED.h"
+#elif defined(ESP32_C3_SUPER_COMPACT)
+  #include "xiaoLED.h"
 #else
   #include "LedInterface.h"
 #endif
@@ -121,6 +123,8 @@ CommandLine cli_obj;
   flipperLED flipper_led;
 #elif defined(XIAO_ESP32_S3)
   xiaoLED xiao_led;
+#elif defined(ESP32_C3_SUPER_COMPACT)
+  xiaoLED xiao_led;
 #else
   LedInterface led_obj;
 #endif
@@ -190,9 +194,17 @@ void setup()
     digitalWrite(SD_CS, HIGH);
 
     delay(10);
+    #ifdef ESP32_C3_SUPER_COMPACT
+      SPI.begin(SD_SCK,SD_MISO,SD_MOSI,SD_CS);
+    #endif
   #endif
 
-  Serial.begin(115200);
+  #ifdef ESP32_C3_SUPER_COMPACT
+    Serial.begin(115200, SERIAL_8N1, 20, 21);
+  #else
+    Serial.begin(115200);
+  #endif
+  
 
   // Starts a second serial channel to stream the captured packets
   #ifdef WRITE_PACKETS_SERIAL
@@ -341,6 +353,8 @@ void setup()
     flipper_led.RunSetup();
   #elif defined(XIAO_ESP32_S3)
     xiao_led.RunSetup();
+  #elif defined(ESP32_C3_SUPER_COMPACT)
+    xiao_led.RunSetup();
   #else
     led_obj.RunSetup();
   #endif
@@ -436,6 +450,8 @@ void loop()
   #ifdef MARAUDER_FLIPPER
     flipper_led.main();
   #elif defined(XIAO_ESP32_S3)
+    xiao_led.main();
+  #elif defined(ESP32_C3_SUPER_COMPACT)
     xiao_led.main();
   #else
     led_obj.main(currentTime);
