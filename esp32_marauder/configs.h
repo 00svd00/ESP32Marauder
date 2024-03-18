@@ -685,10 +685,7 @@
     #endif
 
     #ifdef MARAUDER_FLIPPER
-      #define SD_CS 7
-      #define SD_SCK 4
-      #define SD_MISO 5
-      #define SD_MOSI 6
+      #define SD_CS 10
     #endif
 
     #ifdef ESP32_LDDB
