@@ -1,9 +1,12 @@
+#pragma once
+
 #ifndef WiFiScan_h
 #define WiFiScan_h
 
 #include "configs.h"
 
 #include <ArduinoJson.h>
+#include <algorithm>
 
 #ifdef HAS_BT
   #include <NimBLEDevice.h>
@@ -38,6 +41,8 @@
   #include "xiaoLED.h"
 #elif defined(ESP32_C3_SUPER_COMPACT)
   #include "xiaoLED.h"
+#elif defined(MARAUDER_M5STICKC)
+  #include "stickcLED.h"
 #else
   #include "LedInterface.h"
 #endif
@@ -85,6 +90,10 @@
 #define BT_SCAN_WAR_DRIVE_CONT 35
 #define BT_ATTACK_SOUR_APPLE 36
 #define BT_ATTACK_SWIFTPAIR_SPAM 37
+#define BT_ATTACK_SPAM_ALL 38
+#define BT_ATTACK_SAMSUNG_SPAM 39
+#define WIFI_SCAN_GPS_NMEA 40
+#define BT_ATTACK_GOOGLE_SPAM 41
 
 #define GRAPH_REFRESH 100
 
@@ -112,6 +121,8 @@ extern Settings settings_obj;
   extern xiaoLED xiao_led;
 #elif defined(ESP32_C3_SUPER_COMPACT)
   extern xiaoLED xiao_led;
+#elif defined(MARAUDER_M5STICKC)
+  extern stickcLED stickc_led;
 #else
   extern LedInterface led_obj;
 #endif
@@ -188,7 +199,7 @@ class WiFiScan
     #endif
 
     //String connected_network = "";
-    const String alfa = "1234567890qwertyuiopasdfghjkklzxcvbnm QWERTYUIOPASDFGHJKLZXCVBNM_";
+    //const String alfa = "1234567890qwertyuiopasdfghjkklzxcvbnm QWERTYUIOPASDFGHJKLZXCVBNM_";
 
     const char* rick_roll[8] = {
       "01 Never gonna give you up",
@@ -250,13 +261,41 @@ class WiFiScan
                               0xf0, 0xff, 0x02, 0x00
                           };
 
+    enum EBLEPayloadType
+    {
+      Microsoft,
+      Apple,
+      Samsung,
+      Google
+    };
+
+      #ifdef HAS_BT
+
+      struct BLEData
+      {
+        NimBLEAdvertisementData AdvData;
+        NimBLEAdvertisementData ScanData;
+      };
+
+      struct WatchModel
+      {
+          uint8_t value;
+          const char *name;
+      };
+
+      WatchModel* watch_models = nullptr;
+
+      static void scanCompleteCB(BLEScanResults scanResults);
+      NimBLEAdvertisementData GetUniversalAdvertisementData(EBLEPayloadType type);
+    #endif
+
     bool seen_mac(unsigned char* mac);
     bool mac_cmp(struct mac_addr addr1, struct mac_addr addr2);
     void save_mac(unsigned char* mac);
     void clearMacHistory();
     void executeWarDrive();
     void executeSourApple();
-    void executeSwiftpairSpam();
+    void executeSwiftpairSpam(EBLEPayloadType type);
     void startWardriverWiFi();
     void generateRandomMac(uint8_t* mac);
 
@@ -280,6 +319,7 @@ class WiFiScan
     void broadcastSetSSID(uint32_t current_time, const char* ESSID);
     void RunAPScan(uint8_t scan_mode, uint16_t color);
     void RunGPSInfo();
+    void RunGPSNmea();
     void RunMimicFlood(uint8_t scan_mode, uint16_t color);
     void RunPwnScan(uint8_t scan_mode, uint16_t color);
     void RunBeaconScan(uint8_t scan_mode, uint16_t color);
@@ -295,9 +335,6 @@ class WiFiScan
     void RunLvJoinWiFi(uint8_t scan_mode, uint16_t color);
     void RunEvilPortal(uint8_t scan_mode, uint16_t color);
     bool checkMem();
-    #ifdef HAS_BT
-      static void scanCompleteCB(BLEScanResults scanResults);
-    #endif
 
 
   public:
@@ -322,6 +359,9 @@ class WiFiScan
     String dst_mac = "ff:ff:ff:ff:ff:ff";
     byte src_mac[6] = {};
 
+    String current_mini_kb_ssid = "";
+
+    const String alfa = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789-=[];',./`\\_+{}:\"<>?~|!@#$%^&*()";
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     wifi_config_t ap_config;
@@ -355,8 +395,11 @@ class WiFiScan
     void StartScan(uint8_t scan_mode, uint16_t color = 0);
     void StopScan(uint8_t scan_mode);
     const char* generateRandomName();
-    //void addLog(String log, int len);
-    
+
+    bool save_serial = false;
+    void startPcap(String file_name);
+    void startLog(String file_name);
+
     static void getMAC(char *addr, uint8_t* data, uint16_t offset);
     static void pwnSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type);
     static void beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type);
@@ -370,6 +413,58 @@ class WiFiScan
     static void activeEapolSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type);
     static void eapolSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type);
     static void wifiSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type);
-    static void addPacket(wifi_promiscuous_pkt_t *snifferPacket, int len);
+
+    /*#ifdef HAS_BT
+      enum EBLEPayloadType
+      {
+        Microsoft,
+        Apple,
+        Samsung,
+        Google
+      };
+
+      struct BLEData
+      {
+        NimBLEAdvertisementData AdvData;
+        NimBLEAdvertisementData ScanData;
+      };
+
+      struct WatchModel
+      {
+          uint8_t value;
+          const char *name;
+      };
+
+      WatchModel* watch_models = nullptr;
+
+      const WatchModel watch_models[] = {
+        {0x1A, "Fallback Watch"},
+        {0x01, "White Watch4 Classic 44m"},
+        {0x02, "Black Watch4 Classic 40m"},
+        {0x03, "White Watch4 Classic 40m"},
+        {0x04, "Black Watch4 44mm"},
+        {0x05, "Silver Watch4 44mm"},
+        {0x06, "Green Watch4 44mm"},
+        {0x07, "Black Watch4 40mm"},
+        {0x08, "White Watch4 40mm"},
+        {0x09, "Gold Watch4 40mm"},
+        {0x0A, "French Watch4"},
+        {0x0B, "French Watch4 Classic"},
+        {0x0C, "Fox Watch5 44mm"},
+        {0x11, "Black Watch5 44mm"},
+        {0x12, "Sapphire Watch5 44mm"},
+        {0x13, "Purpleish Watch5 40mm"},
+        {0x14, "Gold Watch5 40mm"},
+        {0x15, "Black Watch5 Pro 45mm"},
+        {0x16, "Gray Watch5 Pro 45mm"},
+        {0x17, "White Watch5 44mm"},
+        {0x18, "White & Black Watch5"},
+        {0x1B, "Black Watch6 Pink 40mm"},
+        {0x1C, "Gold Watch6 Gold 40mm"},
+        {0x1D, "Silver Watch6 Cyan 44mm"},
+        {0x1E, "Black Watch6 Classic 43m"},
+        {0x20, "Green Watch6 Classic 43m"},
+      };
+    #endif*/
 };
 #endif
