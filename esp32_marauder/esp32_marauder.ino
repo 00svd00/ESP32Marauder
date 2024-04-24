@@ -38,7 +38,7 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "flipperLED.h"
 #elif defined(XIAO_ESP32_S3)
   #include "xiaoLED.h"
-#elif defined(ESP32_C3_SUPER_COMPACT)
+#elif defined(HAS_XIAO_LED)
   #include "xiaoLED.h"
 #elif defined(MARAUDER_M5STICKC)
   #include "stickcLED.h"
@@ -111,7 +111,7 @@ CommandLine cli_obj;
   flipperLED flipper_led;
 #elif defined(XIAO_ESP32_S3)
   xiaoLED xiao_led;
-#elif defined(ESP32_C3_SUPER_COMPACT)
+#elif defined(HAS_XIAO_LED)
   xiaoLED xiao_led;
 #elif defined(MARAUDER_M5STICKC)
   stickcLED stickc_led;
@@ -187,8 +187,8 @@ void setup()
     #endif
   #endif
 
-  #ifdef ESP32_C3_SUPER_COMPACT
-    Serial.begin(115200, SERIAL_8N1, 20, 21);
+  #ifdef CUSTOM_SERIAL
+    Serial.begin(115200, SERIAL_8N1, C3SM_RX0, C3SM_TX0);
   #else
     Serial.begin(115200);
   #endif
@@ -199,6 +199,8 @@ void setup()
     
     #ifdef XIAO_ESP32_S3
       Serial1.begin(115200, SERIAL_8N1, XIAO_RX1, XIAO_TX1);
+    #elif defined(ESP32_C3_SUPER_COMPACTV2)
+      Serial1.begin(115200, SERIAL_8N1, C3SM_RX1, C3SM_TX1);
     #else
       Serial1.begin(115200);
     #endif
@@ -313,7 +315,7 @@ void setup()
     flipper_led.RunSetup();
   #elif defined(XIAO_ESP32_S3)
     xiao_led.RunSetup();
-  #elif defined(ESP32_C3_SUPER_COMPACT)
+  #elif defined(HAS_XIAO_LED)
     xiao_led.RunSetup();
   #elif defined(MARAUDER_M5STICKC)
     stickc_led.RunSetup();
@@ -423,7 +425,7 @@ void loop()
     flipper_led.main();
   #elif defined(XIAO_ESP32_S3)
     xiao_led.main();
-  #elif defined(ESP32_C3_SUPER_COMPACT)
+  #elif defined(HAS_XIAO_LED)
     xiao_led.main();
   #elif defined(MARAUDER_M5STICKC)
     stickc_led.main();

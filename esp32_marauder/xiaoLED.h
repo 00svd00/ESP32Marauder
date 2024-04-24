@@ -10,6 +10,8 @@
 
 #ifdef ESP32_C3_SUPER_COMPACT
   #define XIAO_LED_PIN 8
+#elif defined(ESP32_C3_SUPER_COMPACTV2)
+  #define XIAO_LED_PIN 8
 #else
   #define XIAO_LED_PIN 21
 #endif

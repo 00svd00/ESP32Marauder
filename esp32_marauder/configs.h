@@ -18,7 +18,8 @@
   //#define ESP32_LDDB
   //#define MARAUDER_DEV_BOARD_PRO
   //#define XIAO_ESP32_S3
-  #define ESP32_C3_SUPER_COMPACT
+  //#define ESP32_C3_SUPER_COMPACT
+  #define ESP32_C3_SUPER_COMPACTV2
   //// END BOARD TARGETS
 
   #define MARAUDER_VERSION "v0.13.9"
@@ -211,12 +212,35 @@
     #define HAS_BT
     //#define HAS_BUTTONS
     //#define HAS_NEOPIXEL_LED
+    #define HAS_XIAO_LED
     //#define HAS_PWR_MGMT
     //#define HAS_SCREEN
     #define HAS_SD
     #define USE_SD
     //#define HAS_TEMP_SENSOR
     //#define HAS_GPS
+    #define CUSTOM_SERIAL
+  #endif
+  //// END BOARD FEATURES
+  #ifdef ESP32_C3_SUPER_COMPACTV2
+    //#define FLIPPER_ZERO_HAT
+    //#define HAS_BATTERY
+    #define HAS_BT
+    //#define HAS_BUTTONS
+    //#define HAS_NEOPIXEL_LED
+    #define HAS_XIAO_LED
+    //#define HAS_PWR_MGMT
+    //#define HAS_SCREEN
+    //#define HAS_SD
+    //#define USE_SD
+    //#define HAS_TEMP_SENSOR
+    #define HAS_GPS
+    #define CUSTOM_SERIAL
+    #define WRITE_PACKETS_SERIAL
+    #define C3SM_RX0 20
+    #define C3SM_TX0 21
+    #define C3SM_RX1 8
+    #define C3SM_TX1 7
   #endif
   //// END BOARD FEATURES
 
@@ -938,6 +962,8 @@
     #define MEM_LOWER_LIM 20000
   #elif defined(ESP32_C3_SUPER_COMPACT)
     #define MEM_LOWER_LIM 20000
+  #elif defined(ESP32_C3_SUPER_COMPACTV2)
+    #define MEM_LOWER_LIM 20000
   #endif
   //// END MEMORY LOWER LIMIT STUFF
 
@@ -981,6 +1007,8 @@
   #elif defined(XIAO_ESP32_S3)
     #define MAX_HTML_SIZE 20000
   #elif defined(ESP32_C3_SUPER_COMPACT)
+    #define MAX_HTML_SIZE 20000
+  #elif defined(ESP32_C3_SUPER_COMPACTV2)
     #define MAX_HTML_SIZE 20000
   #else
     #define MAX_HTML_SIZE 20000
@@ -1028,6 +1056,11 @@
       #define GPS_SERIAL_INDEX 1
       #define GPS_TX 6
       #define GPS_RX 9
+      #define mac_history_len 512
+    #elif defined(ESP32_C3_SUPER_COMPACTV2)
+      #define GPS_SERIAL_INDEX 1
+      #define GPS_TX 1
+      #define GPS_RX 0
       #define mac_history_len 512
     #endif
   #else

@@ -2,13 +2,21 @@
 
 #ifdef HAS_GPS
 
+#ifdef ESP32_C3_SUPER_COMPACTV2
+  #include <SoftwareSerial.h>
+#endif
+
 extern GpsInterface gps_obj;
 
 char nmeaBuffer[100];
 
 MicroNMEA nmea(nmeaBuffer, sizeof(nmeaBuffer));
 
-HardwareSerial Serial2(GPS_SERIAL_INDEX);
+#ifdef ESP32_C3_SUPER_COMPACTV2
+    EspSoftwareSerial::UART Serial2;
+#else
+    HardwareSerial Serial2(GPS_SERIAL_INDEX);
+#endif
 
 void GpsInterface::begin() {
 
@@ -23,10 +31,11 @@ void GpsInterface::begin() {
     Serial.println("Activated GPS");
     delay(100);
   #endif*/
-
-  
+#ifdef ESP32_C3_SUPER_COMPACTV2
+  Serial2.begin(9600, SWSERIAL_8N1, GPS_RX, GPS_TX, false);
+#else
   Serial2.begin(9600, SERIAL_8N1, GPS_TX, GPS_RX);
-
+#endif
   MicroNMEA::sendSentence(Serial2, "$PSTMSETPAR,1201,0x00000042");
   MicroNMEA::sendSentence(Serial2, "$PSTMSAVEPAR");
 
